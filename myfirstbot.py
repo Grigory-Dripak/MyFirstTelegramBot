@@ -4,6 +4,7 @@ from dotenv import load_dotenv, find_dotenv
 import extensions
 
 calc = extensions.CurrencyConverter()
+
 load_dotenv(find_dotenv())
 # @mypersonal85_bot
 bot = telebot.TeleBot(getenv('TOKEN'))
@@ -22,13 +23,16 @@ def trycommand(message: telebot.types.Message):
 
 @bot.message_handler(commands=['values'])
 def trycommand(message: telebot.types.Message):
-    bot.reply_to(message, f"{message.chat.username}, я могу конвертировать следующие валюты: \n"
-                          f"{', '.join([i for i in calc.legal_currency.values()])}")
+    bot.reply_to(message, f"{message.chat.username}, я могу конвертировать следующие валюты: \n "
+                          f"{', '.join(calc.legal_currency)}")
 
 @bot.message_handler()
 def trycommand(message: telebot.types.Message):
     print(message.text)
-    bot.reply_to(message, f"Hello {message.chat.username}")
+    base, quote, amount = message.text.split(' ')
+    amount = float(amount)
+    text = calc.get_price(base, quote, amount)
+    bot.reply_to(message, text)
 
-if __name__ == "__main__":
-    bot.polling(none_stop=True)
+
+bot.polling(none_stop=True)
