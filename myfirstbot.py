@@ -24,15 +24,18 @@ def trycommand(message: telebot.types.Message):
 @bot.message_handler(commands=['values'])
 def trycommand(message: telebot.types.Message):
     bot.reply_to(message, f"{message.chat.username}, я могу конвертировать следующие валюты: \n "
-                          f"{', '.join(calc.legal_currency)}")
+                          f"{', '.join(extensions.legal_currency)}")
 
 @bot.message_handler()
 def trycommand(message: telebot.types.Message):
-    print(message.text)
-    base, quote, amount = message.text.split(' ')
-    amount = float(amount)
-    text = calc.get_price(base, quote, amount)
-    bot.reply_to(message, text)
-
+    try:
+        base, quote, amount = calc.textnormalize(message.text)
+        text = calc.get_price(base, quote, amount)
+    except extensions.APIException as e:
+        bot.reply_to(message, f'Ошибка ввода параметров для перевода валюты: \n {e}')
+    except Exception as e:
+        bot.reply_to(message, f'Ошибка выполнения программы: \n {e}')
+    else:
+        bot.reply_to(message, text)
 
 bot.polling(none_stop=True)
